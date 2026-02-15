@@ -5,7 +5,7 @@ import {
   query,
   validationResult,
 } from "express-validator"
-import db from "../db/queries.js"
+import db from "../db/moviesQueries.js"
 
 const movieValidations = [
   body("title")
