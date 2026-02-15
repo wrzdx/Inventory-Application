@@ -3,15 +3,18 @@ import express from "express"
 import path from "path"
 import { fileURLToPath } from "url"
 
+import moviesRouter from "./routes/moviesRouter.js"
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const PORT = process.env.PORT || 8000
 
 const app = express()
 app.set("views", path.join(__dirname, "views"))
 app.set("view engine", "ejs")
+app.use(express.urlencoded({extended: true}))
 app.use(express.static("public"))
-app.use(express.urlencoded({ extended: true }))
 
+app.use("/", moviesRouter)
 
 app.listen(PORT, (error) => {
   if (error) {
