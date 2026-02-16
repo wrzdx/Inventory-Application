@@ -1,0 +1,62 @@
+<section class="admin-content">
+  <div class="section-header">
+    <h2>Directors List</h2>
+    <form action="/directors/new" method="POST" class="inline-add">
+      <input type="text" name="name" placeholder="New Director Name" required>
+      <button type="submit" class="btn-add">Add</button>
+    </form>
+  </div>
+
+  <div class="list-container">
+    <% directors.forEach(dir => { %>
+    <div class="list-item" id="item-<%= dir.id %>">
+
+      <!-- Режим просмотра -->
+      <div class="view-mode">
+        <div class="item-info">
+          <strong class="name-text"><%= dir.name %></strong>
+        </div>
+        <div class="item-actions">
+          <!-- Кнопка вызывает JS функцию -->
+          <button type="button" class="btn-edit"
+              onclick="toggleEdit('<%= dir.id %>')">Edit</button>
+          <form action="/directors/<%= dir.id %>/delete" method="POST">
+            <button type="submit" class="btn-delete">Delete</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Режим редактирования (скрыт по умолчанию) -->
+      <form action="/directors/<%= dir.id %>/edit" method="POST"
+          class="edit-mode" style="display: none; width: 100%;">
+        <div class="item-info">
+          <input type="text" name="name" value="<%= dir.name %>" required
+              style="width: 100%;">
+        </div>
+        <div class="item-actions">
+          <button type="submit" class="btn-save">Commit</button>
+          <button type="button" class="btn-cancel"
+              onclick="toggleEdit('<%= dir.id %>')">Cancel</button>
+        </div>
+      </form>
+
+    </div>
+    <% }) %>
+  </div>
+</section>
+
+<script>
+  function toggleEdit(id) {
+    const item = document.getElementById(`item-${id}`);
+    const view = item.querySelector('.view-mode');
+    const edit = item.querySelector('.edit-mode');
+
+    if (view.style.display === 'none') {
+      view.style.display = 'flex';
+      edit.style.display = 'none';
+    } else {
+      view.style.display = 'none';
+      edit.style.display = 'flex';
+    }
+  }
+</script>

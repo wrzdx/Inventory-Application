@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+  <meta charset="UTF-8">
+  <title><%= isEdit ? 'Edit' : 'Add' %> Movie</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+
+<body>
+  <header>
+    <h1><%= isEdit ? 'Editing: ' + movie.title : 'Add New Movie' %></h1>
+  </header>
+  <% if (typeof errors !== 'undefined' && errors.length > 0) { %>
+  <script>
+    alert("Validation Errors:\n" + "<%= errors.map(e => e.msg).join('\\n') %>");
+  </script>
+
+  <div style="color: red; margin-bottom: 20px;">
+    <ul>
+      <% errors.forEach(error => { %>
+      <li><strong><%= error.path %>:</strong> <%= error.msg %></li>
+      <% }) %>
+    </ul>
+  </div>
+  <% } %>
+  <div class="container">
+    <nav class="nav">
+      <a href="/movies">← Back to List</a>
+    </nav>
+
+    <form
+        action="<%= isEdit ? '/movies/' + movie.id + '/edit' : '/movies/new' %>"
+        method="POST" class="form-container">
+
+      <div class="form-group">
+        <label for="title">Movie Title</label>
+        <input type="text" id="title" name="title"
+            value="<%= isEdit ? movie.title : '' %>" required>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="year">Release Year</label>
+          <input type="number" id="year" name="year"
+              value="<%= isEdit ? movie.year : 2024 %>" min="1880">
+        </div>
+        <div class="form-group">
+          <label for="runtime">Runtime (min)</label>
+          <input type="number" id="runtime" name="runtime"
+              value="<%= isEdit ? movie.runtime : 120 %>" min="1">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="directorId">Director</label>
+        <select id="directorId" name="directorId" required>
+          <option value="" disabled <%= !isEdit ? 'selected' : '' %>>Select a
+            director</option>
+          <% directors.forEach(dir => { %>
+          <option value="<%= dir.id %>"
+              <%= (isEdit && movie.director_id === dir.id) ? 'selected' : '' %>>
+            <%= dir.name %>
+          </option>
+          <% }) %>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Genres (Select multiple)</label>
+        <div class="checkbox-grid">
+          <% genres.forEach(gen => { %>
+          <label class="checkbox-item">
+            <input type="checkbox" name="genreIds" value="<%= gen.id %>"
+                <%= (isEdit && movie.genres && movie.genres.includes(gen.name)) ? 'checked' : '' %>>
+            <%= gen.name %>
+          </label>
+          <% }) %>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="description">Description</label>
+        <textarea id="description" name="description"
+            rows="4"><%= isEdit ? movie.description : '' %></textarea>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit"
+            class="btn-add"><%= isEdit ? 'Update Movie' : 'Create Movie' %></button>
+        <a href="/movies" class="btn-cancel">Cancel</a>
+      </div>
+    </form>
+  </div>
+</body>
+
+</html>

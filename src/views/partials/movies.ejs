@@ -1,0 +1,61 @@
+<section class="main-content">
+  <!-- Боковая панель фильтров -->
+  <aside class="filters">
+    <form action="/movies" method="GET">
+      <h3>Filters</h3>
+
+      <div class="filter-group">
+        <h4>Directors</h4>
+        <label>
+          <input type="radio" name="directorId" value="" checked> All
+        </label>
+        <% directors.forEach(dir => { %>
+        <label>
+          <input type="radio" name="directorId" value="<%= dir.id %>">
+          <%= dir.name %>
+        </label>
+        <% }) %>
+      </div>
+
+      <div class="filter-group">
+        <h4>Genres</h4>
+        <% genres.forEach(gen => { %>
+        <label>
+          <input type="checkbox" name="genreIds" value="<%= gen.id %>">
+          <%= gen.name %>
+        </label>
+        <% }) %>
+      </div>
+
+      <button type="submit" class="btn-apply">Apply Filters</button>
+    </form>
+  </aside>
+
+  <!-- Список фильмов -->
+  <div class="movies">
+    <div class="section-header">
+      <h2>Movies List</h2>
+      <a href="/movies/new" class="btn-add">+ Add Movie</a>
+    </div>
+
+    <% movies.forEach(movie => { %>
+    <div class="movie-card">
+      <div class="movie-info">
+        <h3><%= movie.title %> (<%= movie.year %>)</h3>
+        <p>Director: <strong><%= movie.director %></strong></p>
+        <div class="movie-genres">
+          <% movie.genres.forEach(g => { %>
+          <span class="genre-tag"><%= g %></span>
+          <% }) %>
+        </div>
+      </div>
+      <div class="movie-actions">
+        <a href="/movies/<%= movie.id %>/edit">Edit</a>
+        <form action="/movies/<%= movie.id %>/delete" method="POST">
+          <button type="submit" class="btn-delete">Delete</button>
+        </form>
+      </div>
+    </div>
+    <% }); %>
+  </div>
+</section>

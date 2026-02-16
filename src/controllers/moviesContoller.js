@@ -17,9 +17,9 @@ const movieValidations = [
     .escape(),
   body("year").isInt({ min: 1800 }).withMessage("Invalid year"),
   body("genreIds")
+    .toArray()
     .isArray({ min: 1 })
-    .withMessage("Select at least 1 genre")
-    .toArray(),
+    .withMessage("Select at least 1 genre"),
   body("genreIds.*").isInt({ gt: 0 }).withMessage("Invalid genre").toInt(),
   body("runtime").isInt({ min: 1 }).withMessage("Invalid runtime").toInt(),
   body("description").trim().optional({ checkFalsy: true }).escape(),
@@ -33,14 +33,19 @@ const getMovies = [
     .isInt({ gt: 0 })
     .withMessage("Invalid director")
     .toInt(),
-  query("genreIds")
-    .toArray()
-    .optional(),
+  query("genreIds").toArray().optional(),
   query("genreIds.*").isInt({ gt: 0 }).withMessage("Invalid genre").toInt(),
   async (req, res) => {
     const { directorId, genreIds } = matchedData(req)
     const movies = await db.getMovies(directorId, genreIds)
-    res.json(movies)
+    const directors = await db.getDirectors()
+    const genres = await db.getGenres()
+    res.render("index", {
+      movies,
+      directors,
+      genres,
+      active: "movies",
+    })
   },
 ]
 
@@ -64,13 +69,37 @@ const getMovie = [
   },
 ]
 
+const newMovie = async (req, res) => {
+  const directors = await db.getDirectors()
+  const genres = await db.getGenres()
+  res.render("movieForm", { isEdit: false, directors, genres, movie: {} })
+}
+
+const editMovie = async (req, res) => {
+  const movie = await db.getMovie(req.params.id)
+  const directors = await db.getDirectors()
+  const genres = await db.getGenres()
+
+  if (!movie) return res.status(404).send("Movie not found")
+
+  res.render("movieForm", { isEdit: true, movie, directors, genres })
+}
+
 const postMovie = [
   movieValidations,
   async (req, res) => {
     const errors = validationResult(req)
 
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() })
+      const directors = await db.getDirectors()
+      const genres = await db.getGenres()
+      return res.render("movieForm", {
+        isEdit: false,
+        directors,
+        genres,
+        movie: req.body,
+        errors: errors.array(),
+      })
     }
 
     const { title, year, genreIds, runtime, description, directorId } =
@@ -83,18 +112,26 @@ const postMovie = [
       description,
       directorId,
     )
-    res.status(201).json(newMovie)
+    res.redirect("/movies")
   },
 ]
 
 const updateMovie = [
-  body("id").isInt({ gt: 0 }).withMessage("Invalid id").toInt(),
+  param("id").isInt({ gt: 0 }).withMessage("Invalid id").toInt(),
   movieValidations,
   async (req, res) => {
     const errors = validationResult(req)
 
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() })
+      const directors = await db.getDirectors()
+      const genres = await db.getGenres()
+      return res.render("movieForm", {
+        isEdit: true,
+        directors,
+        genres,
+        movie: req.body,
+        errors: errors.array(),
+      })
     }
 
     const { id, title, year, genreIds, runtime, description, directorId } =
@@ -115,15 +152,14 @@ const updateMovie = [
       })
     }
 
-    res.json(updatedMovie)
+    res.redirect("/movies")
   },
 ]
 
 const deleteMovie = [
-  query("id").isInt({ gt: 0 }).withMessage("Invalid id").toInt(),
+  param("id").isInt({ gt: 0 }).withMessage("Invalid id").toInt(),
   async (req, res) => {
     const errors = validationResult(req)
-
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() })
     }
@@ -136,10 +172,16 @@ const deleteMovie = [
         .status(404)
         .json({ error: "Movie not found, nothing to delete" })
     }
-    res
-      .status(200)
-      .json({ message: "Deleted successfully", movie: deletedMovie })
+    res.redirect("/movies")
   },
 ]
 
-export default { getMovies, getMovie, postMovie, updateMovie, deleteMovie }
+export default {
+  getMovies,
+  getMovie,
+  postMovie,
+  updateMovie,
+  deleteMovie,
+  newMovie,
+  editMovie,
+}

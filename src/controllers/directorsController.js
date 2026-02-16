@@ -18,7 +18,8 @@ const directorValidation = [
 ]
 
 const getDirectors = async (req, res) => {
-  res.json(await db.getDirectors())
+  const directors = await db.getDirectors()
+  res.render("index", { active: "directors", directors })
 }
 
 const getDirector = [
@@ -50,7 +51,7 @@ const postDirector = [
     const { name } = matchedData(req)
     try {
       const newDirector = await db.createDirector(name)
-      res.json(newDirector)
+      res.redirect("/directors")
     } catch (err) {
       if (err.code === "23505") {
         return res.status(400).json({
@@ -65,7 +66,7 @@ const postDirector = [
 ]
 
 const updateDirector = [
-  body("id").isInt({ gt: 0 }).withMessage("Invalid id").toInt(),
+  param("id").isInt({ gt: 0 }).withMessage("Invalid id").toInt(),
   ,
   directorValidation,
   async (req, res) => {
@@ -82,12 +83,12 @@ const updateDirector = [
         error: `Director with ID ${id} not found`,
       })
     }
-    res.json(updatedDirector)
+    res.redirect("/directors")
   },
 ]
 
 const deleteDirector = [
-  query("id").isInt({ gt: 0 }).withMessage("Invalid id").toInt(),
+  param("id").isInt({ gt: 0 }).withMessage("Invalid id").toInt(),
   async (req, res) => {
     const errors = validationResult(req)
 
@@ -102,7 +103,7 @@ const deleteDirector = [
         error: `Director with ID ${id} not found`,
       })
     }
-    res.json(deleted)
+    res.redirect("/directors")
   },
 ]
 

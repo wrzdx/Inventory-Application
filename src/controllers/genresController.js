@@ -18,7 +18,8 @@ const genreValidation = [
 ]
 
 const getGenres = async (req, res) => {
-  res.json(await db.getGenres())
+  const genres = await db.getGenres();
+  res.render("index", { active: 'genres', genres });
 }
 
 const getGenre = [
@@ -50,7 +51,7 @@ const postGenre = [
     const { name } = matchedData(req)
     try {
       const newGenre = await db.createGenre(name)
-      res.json(newGenre)
+      res.redirect("/genres/")
     } catch (err) {
       if (err.code === "23505") {
         return res.status(400).json({
@@ -65,7 +66,7 @@ const postGenre = [
 ]
 
 const updateGenre = [
-  body("id").isInt({ gt: 0 }).withMessage("Invalid id").toInt(),
+  param("id").isInt({ gt: 0 }).withMessage("Invalid id").toInt(),
   ,
   genreValidation,
   async (req, res) => {
@@ -83,12 +84,12 @@ const updateGenre = [
         error: `Genre with ID ${id} not found`,
       })
     }
-    res.json(updatedGenre)
+    res.redirect("/genres/")
   },
 ]
 
 const deleteGenre = [
-  query("id").isInt({ gt: 0 }).withMessage("Invalid id").toInt(),
+  param("id").isInt({ gt: 0 }).withMessage("Invalid id").toInt(),
   async (req, res) => {
     const errors = validationResult(req)
 
@@ -103,7 +104,7 @@ const deleteGenre = [
         error: `Genre with ID ${id} not found`,
       })
     }
-    res.json(deleted)
+    res.redirect("/genres/")
   },
 ]
 

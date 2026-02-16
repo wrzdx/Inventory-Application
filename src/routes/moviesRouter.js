@@ -4,10 +4,12 @@ import moviesContoller from "../controllers/moviesContoller.js"
 const router = Router()
 
 router.get("/", moviesContoller.getMovies)
-router.get("/delete", moviesContoller.deleteMovie)
+router.get("/new", moviesContoller.newMovie)
+router.get("/:id/edit", moviesContoller.editMovie)
 router.get("/:id", moviesContoller.getMovie)
+router.post("/:id/delete", moviesContoller.deleteMovie)
 router.post("/new", moviesContoller.postMovie)
-router.post("/update", moviesContoller.updateMovie)
+router.post("/:id/edit", moviesContoller.updateMovie)
 
 
 export default router

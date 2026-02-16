@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Inventory App</title>
+  <link rel="stylesheet" href="/styles.css"> <!-- Стили ниже -->
+</head>
+
+<body>
+  <header>
+    <h1>🎬 Movie Inventory</h1>
+  </header>
+
+  <div class="container">
+    <nav class="nav">
+      <a href="/movies"
+          class="<%= active === 'movies' ? 'active' : '' %>">Movies</a>
+      <a href="/directors"
+          class="<%= active === 'directors' ? 'active' : '' %>">Directors</a>
+      <a href="/genres"
+          class="<%= active === 'genres' ? 'active' : '' %>">Genres</a>
+    </nav>
+
+    <% if (active === 'movies') { %>
+    <%- include("./partials/movies.ejs", { movies, directors, genres }) %>
+    <% } else if (active === 'directors') { %>
+    <%- include("./partials/directors.ejs", { directors }) %>
+    <% } else if (active === 'genres') { %>
+    <%- include("./partials/genres.ejs", { genres }) %>
+    <% } %>
+  </div>
+
+  <footer>
+    <p>&copy; 2024 My Movie Inventory App</p>
+  </footer>
+</body>
+
+</html>
