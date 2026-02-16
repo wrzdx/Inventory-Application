@@ -5,7 +5,7 @@ import {
   query,
   validationResult,
 } from "express-validator"
-import db from "../db/moviesQueries.js"
+import db from "../db/queries.js"
 
 const movieValidations = [
   body("title")
@@ -16,20 +16,14 @@ const movieValidations = [
     .withMessage("Title size should be shorter than 255")
     .escape(),
   body("year").isInt({ min: 1800 }).withMessage("Invalid year"),
-  body("genre")
-    .trim()
-    .notEmpty()
-    .withMessage("Genre cannot be empty")
-    .isLength({ max: 255 })
-    .withMessage("Genre size should be shorter than 255")
-    .escape(),
-  body("runtime").isInt({ min: 1 }).withMessage("Invalid runtime"),
+  body("genreIds")
+    .toArray()
+    .isArray({ min: 1 })
+    .withMessage("Select at least 1 genre"),
+  body("genreIds.*").isInt({ gt: 0 }).withMessage("Invalid genre").toInt(),
+  body("runtime").isInt({ min: 1 }).withMessage("Invalid runtime").toInt(),
   body("description").trim().optional({ checkFalsy: true }).escape(),
-  body("director")
-    .trim()
-    .optional({ checkFalsy: true })
-    .isLength({ max: 255 })
-    .escape(),
+  body("directorId").isInt({ gt: 0 }).withMessage("Invalid director").toInt(),
 ]
 
 const getMovies = async (req, res) => {
@@ -38,7 +32,7 @@ const getMovies = async (req, res) => {
 }
 
 const getMovie = [
-  param("id").isInt({ gt: 0 }).withMessage("Invalid id"),
+  param("id").isInt({ gt: 0 }).withMessage("Invalid id").toInt(),
   async (req, res) => {
     const errors = validationResult(req)
 
@@ -66,22 +60,22 @@ const postMovie = [
       return res.status(400).json({ errors: errors.array() })
     }
 
-    const { title, year, genre, runtime, description, director } =
+    const { title, year, genreIds, runtime, description, directorId } =
       matchedData(req)
     const newMovie = await db.createMovie(
       title,
       year,
-      genre,
+      genreIds,
       runtime,
       description,
-      director,
+      directorId,
     )
     res.status(201).json(newMovie)
   },
 ]
 
 const updateMovie = [
-  body("id").isInt({ gt: 0 }),
+  body("id").isInt({ gt: 0 }).withMessage("Invalid id").toInt(),
   movieValidations,
   async (req, res) => {
     const errors = validationResult(req)
@@ -90,16 +84,16 @@ const updateMovie = [
       return res.status(400).json({ errors: errors.array() })
     }
 
-    const { id, title, year, genre, runtime, description, director } =
+    const { id, title, year, genreIds, runtime, description, directorId } =
       matchedData(req)
     const updatedMovie = await db.updateMovie(
       id,
       title,
       year,
-      genre,
+      genreIds,
       runtime,
       description,
-      director,
+      directorId,
     )
 
     if (!updatedMovie) {
@@ -113,7 +107,7 @@ const updateMovie = [
 ]
 
 const deleteMovie = [
-  query("id").isInt({ gt: 0 }),
+  query("id").isInt({ gt: 0 }).withMessage("Invalid id").toInt(),
   async (req, res) => {
     const errors = validationResult(req)
 

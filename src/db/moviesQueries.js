@@ -1,12 +1,42 @@
 import pool from "./pool.js"
 
 async function getMovies() {
-  const { rows } = await pool.query("SELECT * FROM movies;")
+  const subquery = `
+  SELECT COALESCE(json_agg(g.name), '[]') 
+  FROM movie_genres mg 
+  JOIN genres g ON g.id = mg.genre_id 
+  WHERE mg.movie_id = m.id
+  `
+  const query = `
+  SELECT 
+    m.id,m.title, m.year, m.runtime, m.description,  
+    d.name AS director,
+    (${subquery}) AS genres
+  FROM movies m
+  LEFT JOIN directors d ON d.id = m.director_id;
+  `
+
+  const { rows } = await pool.query(query)
   return rows
 }
 
 async function getMovie(id) {
-  const { rows } = await pool.query("SELECT * FROM movies WHERE id=$1;", [id])
+  const subquery = `
+  SELECT COALESCE(json_agg(g.name), '[]') 
+  FROM movie_genres mg 
+  JOIN genres g ON g.id = mg.genre_id 
+  WHERE mg.movie_id = m.id
+  `
+  const query = `
+  SELECT 
+    m.id,m.title, m.year, m.runtime, m.description,  
+    d.name AS director,
+    (${subquery}) AS genres
+  FROM movies m
+  LEFT JOIN directors d ON d.id = m.director_id WHERE m.id=$1;
+  `
+
+  const { rows } = await pool.query(query, [id])
   return rows[0]
 }
 
@@ -33,7 +63,7 @@ async function createMovie(
     await client.query(sql, [movieId, ...genreIds])
 
     await client.query("COMMIT")
-    return rows[0]
+    return await getMovie(movieId); 
   } catch (e) {
     await client.query("ROLLBACK")
     console.error("Error in createMovie transaction:", e)
@@ -72,7 +102,7 @@ async function updateMovie(
     }
 
     await client.query("COMMIT")
-    return rows[0]
+    return await getMovie(id); 
   } catch (e) {
     await client.query("ROLLBACK")
     console.error("Error in createMovie transaction:", e)

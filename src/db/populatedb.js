@@ -6,7 +6,7 @@ import "dotenv/config"
 const SQL = `
 CREATE TABLE IF NOT EXISTS directors (
   id  INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-  name VARCHAR(255) NOT NULL
+  name VARCHAR(255) UNIQUE NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS genres (
@@ -36,9 +36,9 @@ INSERT INTO genres (name) VALUES
 ('Biography'), ('Comedy'), ('Crime'), ('Drama'), ('Thriller'), ('Action'), ('Sci-Fi'), ('Adventure');
 
 INSERT INTO movies (title, year, runtime, description, director_id) VALUES 
-('The Wolf of Wall Street', 2013, 180, '	Based on the true story of Jordan Belfort, from his rise to a wealthy stock-broker living the high life to his fall involving crime and corruption.', 1),
-('Breaking Bad', 2008, 49, 'A high school chemistry teacher diagnosed with inoperable lung cancer turns to manufacturing and selling methamphetamine in order to secure his family's future.', 2),
-('The Gentlemen', 2019, 113, '	An American expat tries to sell off his highly profitable marijuana empire in London, triggering plots, schemes, bribery and blackmail in an attempt to steal his domain out from under him.', 3),
+('The Wolf of Wall Street', 2013, 180, 'Based on the true story of Jordan Belfort, from his rise to a wealthy stock-broker living the high life to his fall involving crime and corruption.', 1),
+('Breaking Bad', 2008, 49, 'A high school chemistry teacher diagnosed with inoperable lung cancer turns to manufacturing and selling methamphetamine in order to secure his family''s future.', 2),
+('The Gentlemen', 2019, 113, 'An American expat tries to sell off his highly profitable marijuana empire in London, triggering plots, schemes, bribery and blackmail in an attempt to steal his domain out from under him.', 3),
 ('Interstellar', 2014, 169, 'When Earth becomes uninhabitable in the future, a farmer and ex-NASA pilot, Joseph Cooper, is tasked to pilot a spacecraft, along with a team of researchers, to find a new planet for humans.', 4);
 
 INSERT INTO movie_genres (movie_id, genre_id) VALUES 
