@@ -1,6 +1,28 @@
 import pool from "./pool.js"
 
-async function getMovies() {
+async function getMovies(directorId, genreIds) {
+  let params = []
+  let conditions = []
+
+  if (directorId) {
+    params.push(directorId)
+    conditions.push(`m.director_id = $${params.length}`)
+  }
+  if (genreIds && genreIds.length > 0) {
+    params.push(genreIds)
+    const genreCount = genreIds.length
+
+    conditions.push(`m.id IN (
+      SELECT movie_id FROM movie_genres 
+      WHERE genre_id = ANY($${params.length}) 
+      GROUP BY movie_id 
+      HAVING COUNT(DISTINCT genre_id) = ${genreCount}
+    )`)
+  }
+
+  const whereClause =
+    conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : ""
+
   const subquery = `
   SELECT COALESCE(json_agg(g.name), '[]') 
   FROM movie_genres mg 
@@ -8,15 +30,13 @@ async function getMovies() {
   WHERE mg.movie_id = m.id
   `
   const query = `
-  SELECT 
-    m.id,m.title, m.year, m.runtime, m.description,  
-    d.name AS director,
-    (${subquery}) AS genres
+  SELECT m.*, d.name AS director, (${subquery}) AS genres
   FROM movies m
-  LEFT JOIN directors d ON d.id = m.director_id;
+  LEFT JOIN directors d ON d.id = m.director_id
+  ${whereClause} ORDER BY m.title;
   `
 
-  const { rows } = await pool.query(query)
+  const { rows } = await pool.query(query, params)
   return rows
 }
 
@@ -63,7 +83,7 @@ async function createMovie(
     await client.query(sql, [movieId, ...genreIds])
 
     await client.query("COMMIT")
-    return await getMovie(movieId); 
+    return await getMovie(movieId)
   } catch (e) {
     await client.query("ROLLBACK")
     console.error("Error in createMovie transaction:", e)
@@ -102,7 +122,7 @@ async function updateMovie(
     }
 
     await client.query("COMMIT")
-    return await getMovie(id); 
+    return await getMovie(id)
   } catch (e) {
     await client.query("ROLLBACK")
     console.error("Error in createMovie transaction:", e)

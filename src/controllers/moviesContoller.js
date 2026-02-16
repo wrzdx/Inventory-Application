@@ -17,19 +17,32 @@ const movieValidations = [
     .escape(),
   body("year").isInt({ min: 1800 }).withMessage("Invalid year"),
   body("genreIds")
-    .toArray()
     .isArray({ min: 1 })
-    .withMessage("Select at least 1 genre"),
+    .withMessage("Select at least 1 genre")
+    .toArray(),
   body("genreIds.*").isInt({ gt: 0 }).withMessage("Invalid genre").toInt(),
   body("runtime").isInt({ min: 1 }).withMessage("Invalid runtime").toInt(),
   body("description").trim().optional({ checkFalsy: true }).escape(),
   body("directorId").isInt({ gt: 0 }).withMessage("Invalid director").toInt(),
 ]
 
-const getMovies = async (req, res) => {
-  const movies = await db.getMovies()
-  res.json(movies)
-}
+const getMovies = [
+  query("directorId")
+    .trim()
+    .optional({ checkFalsy: true })
+    .isInt({ gt: 0 })
+    .withMessage("Invalid director")
+    .toInt(),
+  query("genreIds")
+    .toArray()
+    .optional(),
+  query("genreIds.*").isInt({ gt: 0 }).withMessage("Invalid genre").toInt(),
+  async (req, res) => {
+    const { directorId, genreIds } = matchedData(req)
+    const movies = await db.getMovies(directorId, genreIds)
+    res.json(movies)
+  },
+]
 
 const getMovie = [
   param("id").isInt({ gt: 0 }).withMessage("Invalid id").toInt(),
