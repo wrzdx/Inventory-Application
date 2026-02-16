@@ -34,6 +34,28 @@
   <footer>
     <p>&copy; 2024 My Movie Inventory App</p>
   </footer>
+  <script>
+    document.querySelectorAll('form[method="POST"]')
+      .forEach(form => {
+        form.addEventListener('submit', function(e) {
+          e.preventDefault();
+
+          const password = prompt(
+            "Enter password:");
+
+          if (password !== null) {
+            const passwordInput = document.createElement('input');
+            passwordInput.type = 'hidden';
+            passwordInput.name =
+            'adminPassword'; 
+            passwordInput.value = password;
+
+            this.appendChild(passwordInput);
+            this.submit();
+          }
+        });
+      });
+  </script>
 </body>
 
 </html>

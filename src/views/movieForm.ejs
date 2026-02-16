@@ -91,7 +91,30 @@
         <a href="/movies" class="btn-cancel">Cancel</a>
       </div>
     </form>
+
   </div>
+  <script>
+    document.querySelectorAll('form[method="POST"]')
+      .forEach(form => {
+        form.addEventListener('submit', function(e) {
+          e.preventDefault();
+
+          const password = prompt(
+            "Enter password:");
+
+          if (password !== null) {
+            const passwordInput = document.createElement('input');
+            passwordInput.type = 'hidden';
+            passwordInput.name =
+              'adminPassword';
+            passwordInput.value = password;
+
+            this.appendChild(passwordInput);
+            this.submit();
+          }
+        });
+      });
+  </script>
 </body>
 
 </html>

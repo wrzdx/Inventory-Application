@@ -8,6 +8,13 @@ import {
 import db from "../db/queries.js"
 
 const movieValidations = [
+  body("adminPassword").custom((value) => {
+    const SECRET = process.env.PASSWORD
+    if (value !== SECRET) {
+      throw new Error("Incorrect password")
+    }
+    return true
+  }),
   body("title")
     .trim()
     .notEmpty()
@@ -157,6 +164,13 @@ const updateMovie = [
 ]
 
 const deleteMovie = [
+  body("adminPassword").custom((value) => {
+    const SECRET = process.env.PASSWORD
+    if (value !== SECRET) {
+      throw new Error("Incorrect password")
+    }
+    return true
+  }),
   param("id").isInt({ gt: 0 }).withMessage("Invalid id").toInt(),
   async (req, res) => {
     const errors = validationResult(req)
